@@ -1,0 +1,16 @@
+﻿  Compiling CUDA source file kernel.cu...
+  
+  C:\Users\ksour\source\repos\Labs\Lab1 - Reduction\Reduction_long>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.4\bin\nvcc.exe" -gencode=arch=compute_52,code=\"sm_52,compute_52\" --use-local-env -ccbin "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\bin\HostX86\x64" -x cu   -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.4\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.4\include"  -G   --keep-dir x64\Debug  -maxrregcount=0  --machine 64 --compile -cudart static  -g  -DWIN32 -DWIN64 -D_DEBUG -D_CONSOLE -D_MBCS -Xcompiler "/EHsc /W3 /nologo /Od /Fdx64\Debug\vc142.pdb /FS /Zi /RTC1 /MDd " -o x64\Debug\kernel.cu.obj "C:\Users\ksour\source\repos\Labs\Lab1 - Reduction\Reduction_long\kernel.cu" 
+c:\users\ksour\source\repos\labs\lab1 - reduction\reduction_long\kernel.cu(39): error : identifier "dev_arrayGPU_in" is undefined
+  
+c:\users\ksour\source\repos\labs\lab1 - reduction\reduction_long\kernel.cu(39): error : identifier "dev_arrayGPU_out" is undefined
+  
+c:\users\ksour\source\repos\labs\lab1 - reduction\reduction_long\kernel.cu(39): error : identifier "findTheMaxElementGPU" is undefined
+  
+c:\users\ksour\source\repos\labs\lab1 - reduction\reduction_long\kernel.cu(39): error : kernel launch from __device__ or __global__ functions requires separate compilation mode
+  
+c:\users\ksour\source\repos\labs\lab1 - reduction\reduction_long\kernel.cu(15): warning : variable "GRID_SIZE" was declared but never referenced
+  
+  4 errors detected in the compilation of "c:/users/ksour/source/repos/labs/lab1 - reduction/reduction_long/kernel.cu".
+  kernel.cu
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\BuildCustomizations\CUDA 11.4.targets(785,9): error MSB3721: The command ""C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.4\bin\nvcc.exe" -gencode=arch=compute_52,code=\"sm_52,compute_52\" --use-local-env -ccbin "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\bin\HostX86\x64" -x cu   -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.4\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.4\include"  -G   --keep-dir x64\Debug  -maxrregcount=0  --machine 64 --compile -cudart static  -g  -DWIN32 -DWIN64 -D_DEBUG -D_CONSOLE -D_MBCS -Xcompiler "/EHsc /W3 /nologo /Od /Fdx64\Debug\vc142.pdb /FS /Zi /RTC1 /MDd " -o x64\Debug\kernel.cu.obj "C:\Users\ksour\source\repos\Labs\Lab1 - Reduction\Reduction_long\kernel.cu"" exited with code 1.
