@@ -11,7 +11,7 @@
 #include <chrono>
 #include <limits>
 
-const int ARRAY_SIZE = 1024; // 32, 64, 128, 256, 512, 1024
+const int ARRAY_SIZE = 16777216; // 32, 64, 128, 256, 512, 1024 ... 16777216
 const int GRID_SIZE = 1;
 
 // Инициализация генератора случайных чисел, вихря Мерсенна и равномерного распределения с минимальным и максимальным значениями
@@ -32,17 +32,27 @@ __host__ int findTheMaxElementCPU(int* arrayCPU) { // Вычисление ма�
 	return theMaxElement;
 }
 
-__global__ void findTheMaxElementGPU(int* arrayGPU) {				// Вычисление максимального элемента в block'е на GPU
+__global__ void reduction(int* arrayGPU_in, int* arrayGPU_out) {
+	for (int i = ARRAY_SIZE; i < 1024; i /= 1024) {
+		dim3 gridSize(i/1024);
+		dim3 blockSize(ARRAY_SIZE / gridSize.x); // в итоге получаем 1024
+		findTheMaxElementGPU <<<gridSize, blockSize>>> (dev_arrayGPU_in, dev_arrayGPU_out);
+	}
+}
+__device__ void findTheMaxElementGPU(int* arrayGPU_in, int* arrayGPU_out) {				// Вычисление максимального элемента в block'е на GPU
 	unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+	unsigned int tid = threadIdx.x;
+
+	extern __shared__ int shrArrayGPU[];
 
 	for (unsigned int j = 1; j < blockDim.x; j *= 2) {
 		if (i % (2 * j) == 0) {
-			if (arrayGPU[i] < arrayGPU[i + j]) {
-				arrayGPU[i] = arrayGPU[i + j];
+			if (arrayGPU_in[i] < arrayGPU_in[i + j]) {
+				arrayGPU_in[i] = arrayGPU_in[i + j];
 			}
-				
 		}
 	}
+	if (tid == 0) arrayGPU_out[blockIdx.x] = arrayGPU_in[tid];
 }
 
 __host__ inline void cudaErrorHandler(cudaError_t code) {
@@ -76,24 +86,26 @@ int main() {
 	std::cout << "The duration of cpu computations is " << duration.count() << " microseconds" << std::endl << std::endl << std::endl;
 
 	// Выделение памяти для GPU
-	int* dev_arrayGPU;
-	cudaErrorHandler(cudaMalloc(reinterpret_cast<void**>(&dev_arrayGPU), byteSize));
+	int* dev_arrayGPU_in;
+	cudaErrorHandler(cudaMalloc(reinterpret_cast<void**>(&dev_arrayGPU_in), byteSize));
+	int* dev_arrayGPU_out;
+	cudaErrorHandler(cudaMalloc(reinterpret_cast<void**>(&dev_arrayGPU_out), byteSize));
 
 	// Копируем память из host'а на device
-	cudaErrorHandler(cudaMemcpy(dev_arrayGPU, arrayGPU, byteSize, cudaMemcpyHostToDevice));
+	cudaErrorHandler(cudaMemcpy(dev_arrayGPU_in, arrayGPU, byteSize, cudaMemcpyHostToDevice));
 
 	// Конфигурируем запуск ядра
-	dim3 gridSize(GRID_SIZE);
-	dim3 blockSize(ARRAY_SIZE / GRID_SIZE); // Должно получится 1024 - максимальное значение для моего GPU 
+	//dim3 gridSize(GRID_SIZE);
+	//dim3 blockSize(ARRAY_SIZE / GRID_SIZE); // Должно получится 1024 - максимальное значение для моего GPU 
 
 	// Вызываем ядро и проводим вычисления на GPU
 	start = std::chrono::high_resolution_clock::now();
-	findTheMaxElementGPU <<<gridSize, blockSize>>> (dev_arrayGPU); // Вызыв ядра с заданными параметрами 
+	reduction <<<1,1>>> (dev_arrayGPU_in, dev_arrayGPU_out); // Вызыв ядра с заданными параметрами 
 	stop = std::chrono::high_resolution_clock::now();
 	duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
 
 	// Копирование результатов вычисления из Device в Host
-	cudaErrorHandler(cudaMemcpy(arrayGPU, dev_arrayGPU, byteSize, cudaMemcpyDeviceToHost));
+	cudaErrorHandler(cudaMemcpy(arrayGPU, dev_arrayGPU_out, byteSize, cudaMemcpyDeviceToHost));
 	std::cout << "------------------Algorithm runs on GPU (Handmade)------------------" << std::endl;
 	std::cout << "doing computations, please wait..." << std::endl;
 	std::cout << "The maximum element of the array is " << arrayGPU[0] << std::endl;
@@ -102,7 +114,7 @@ int main() {
 	// Освобождаем выделенную память для host'a и для device
 	delete[] arrayCPU;
 	delete[] arrayGPU;
-	cudaErrorHandler(cudaFree(dev_arrayGPU));
+	cudaErrorHandler(cudaFree(dev_arrayGPU_out));
 
 	return 0;
 }
