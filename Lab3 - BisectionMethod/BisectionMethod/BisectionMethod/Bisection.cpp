@@ -2,6 +2,7 @@
 
 #include <cmath> // для вычисления степени на CPU
 #include <iostream>
+#include <iomanip>
 
 #include <math.h> // для вычисления степени на GPU
 #include <stdio.h>
@@ -13,7 +14,7 @@ __host__ double Function(double x){
 
 __host__ void BisectionMethod(double leftPoint, double rightPoint, const double epsilon){
 	if (Function(leftPoint) * Function(rightPoint) >= 0) {
-		std::cout << "You've assumed wrong a and b\n";
+		//std::cout << "You've assumed wrong a and b\n";
 		return;
 	}
 
@@ -37,7 +38,7 @@ __host__ void BisectionMethod(double leftPoint, double rightPoint, const double 
 	}
 
 	// Выводим результат в консоль
-	std::cout << "The value of the root is: " << middlePoint << std::endl;
+	std::cout << " The value of the root is: " << std::setprecision(3) << middlePoint << std::endl;
 }
 
 __device__ float FunctionCUDA(float x){
@@ -80,13 +81,13 @@ __global__ void BisectionMethodCUDA(){
 
 		// Если середина - корень уровнения, то записываем результат
 		if (FunctionCUDA(middlePoint) == 0.0) {
-			printf("The value of the root is: %f\n", middlePoint);
+			printf(" The value of the root is: %f\n", middlePoint);
 			return;
 		}
 
 		// Если разница между левой и правой точкой меньше эпсилон, то выводим корень в консоль
 		if (fabsf((rightPoint - leftPoint)) <= epsilon) {
-			printf("The value of the root is: %f\n", middlePoint);
+			printf(" The value of the root is: %.2f\n", middlePoint);
 			return;
 		}
 
