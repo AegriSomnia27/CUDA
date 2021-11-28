@@ -3,10 +3,12 @@
 
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
+
 #include <fstream>
+#include <stdint.h>
 
 
-// Структура для хранения значения цветов каждого пикселя
+// Structure that contains colour of each pixels
 struct Colour {
 public:
 	float		red;
@@ -18,23 +20,23 @@ public:
 	~Colour();
 };
 
-// Класс для создания .bmp изображения
+
+// Class that creates and changes a .bmp file
 class Bitmap {
 public:
 	Bitmap() = delete;
 	Bitmap(int Height, int Width, const char* ImageName = "test.bmp");
-	Bitmap(const char* fileName);
+	Bitmap(const char* inputFileName, const char* outputFileName);
 	~Bitmap();
 
-	// Методы, реализованные на CPU
+	// methods on CPU
 	Colour					GetColour(int x, int y) const;
 	void					SetColour(const Colour& colour, int x, int y);
 	void					MakeGrayScaleImage();
-	void					ReadBMP(std::fstream file, const char* fileName);
 	void					GenerateBitmapImage() const;
 
-	// Методы, реализованные на GPU 
-	__global__ void			MakeGrayScaleImageCUDA();
+	// methods on GPU
+	//__global__ void			MakeGrayScaleImageCUDA();
 
 private:
 	static const int		BYTES_PER_PIXEL;
@@ -45,11 +47,11 @@ private:
 	int						width;
 	int						paddingAmount;
 
-	Colour** image;
-	const char* imageFileName;
+	Colour**				image;
+	const char*				imageFileName;
 
-	unsigned char* CreateBitmapFileHeader() const;
-	unsigned char* CreateBitmapInfoHeader() const;
+	unsigned char*			CreateBitmapFileHeader() const;
+	unsigned char*			CreateBitmapInfoHeader() const;
 };
 
 

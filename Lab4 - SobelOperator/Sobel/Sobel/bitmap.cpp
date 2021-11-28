@@ -10,15 +10,15 @@ Colour::~Colour() {}
 
 
 // Bitmap class
-//  онстанты дл€ записи метаданных
+// constants for headers
 const int Bitmap::BYTES_PER_PIXEL = 3;
 const int Bitmap::FILE_HEADER_SIZE = 14;
 const int Bitmap::INFO_HEADER_SIZE = 40;
 
-//  онструктор, создающий 2D массив дл€ каждого пиксел€ со значением цвета в RGB-палитре
+// Constructor that creates a 2D array of pixels with their colours
 Bitmap::Bitmap(int Height, int Width, const char* ImageName) :
 	height(Height), width(Width), imageFileName(ImageName) {
-	paddingAmount = ((4 - (width * 3) % 4) % 4); // ¬ычисл€ет смещение дл€ каждой 'строки' пикселей
+	paddingAmount = ((4 - (width * 3) % 4) % 4);
 
 	image = new Colour * [height];
 
@@ -27,15 +27,59 @@ Bitmap::Bitmap(int Height, int Width, const char* ImageName) :
 	}
 }
 
-Bitmap::Bitmap(const char* fileName){
-	std::ifstream inputFile(fileName, std::ios_base::binary);
+Bitmap::Bitmap(const char* inputFileName, const char* outputFileName){
+	std::ifstream inputFile;
+	inputFile.open(inputFileName, std::ios::in || std::ios::binary);
 
-	if (inputFile) {
-		inputFile.read(reinterpret_cast<char*>(), FILE_HEADER_SIZE);
+	if (!inputFile.is_open()) {
+		std::cerr << "File cannot be opened" << std::endl;
+		return;
 	}
+
+	unsigned char fileHeader[FILE_HEADER_SIZE];
+	inputFile.read(reinterpret_cast<char*>(fileHeader), FILE_HEADER_SIZE);
+
+	if (fileHeader[0] != 'B' || fileHeader[1] != 'M') {
+		std::cerr << "Unsupported type of a file!" << std::endl;
+		inputFile.close();
+		return;
+	}
+
+	unsigned char infoHeader[INFO_HEADER_SIZE];
+	inputFile.read(reinterpret_cast<char*>(infoHeader), INFO_HEADER_SIZE);
+
+	const int fileSize = fileHeader[2] + (fileHeader[3] << 8) + (fileHeader[4] << 16) + (fileHeader[5] << 24);
+	width = infoHeader[4] + (infoHeader[5] << 8) + (infoHeader[6] << 16) + (infoHeader[7] << 24);
+	height = infoHeader[8] + (infoHeader[9] << 8) + (infoHeader[10] << 16) + (infoHeader[11] << 24);
+
+	imageFileName = outputFileName;
+
+	paddingAmount = ((4 - (width * 3) % 4) % 4);
+
+	image = new Colour * [height];
+	for (int i = 0; i < height; i++) {
+		image[i] = new Colour[width];
+	}
+
+
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			unsigned char colour[3];
+			inputFile.read(reinterpret_cast<char*>(colour), 3);
+
+			image[y][x].red = static_cast<float>(colour[2]) / 255.0f;
+			image[y][x].green = static_cast<float>(colour[1]) / 255.0f;
+			image[y][x].blue = static_cast<float>(colour[0]) / 255.0f;
+		}
+		inputFile.ignore(paddingAmount);
+	}
+
+	inputFile.close();
+
+	std::cout << "File has been succesfully read!" << std::endl;
 }
 
-// ƒеструктор, который будет уничтожать созданный объект и освобождать зан€тую им пам€ть
+// Destructor that deletes an object and free the allocated memory
 Bitmap::~Bitmap() {
 	for (int i = 0; i < height; i++) {
 		delete[] image[i];
@@ -43,19 +87,16 @@ Bitmap::~Bitmap() {
 	delete[] image;
 }
 
-// ѕолучаем значение каждого индивидуального пиксел€
 Colour Bitmap::GetColour(int x, int y) const {
 	return image[y][x];
 }
 
-// ”станавливаем значение каждого пиксел€
 void Bitmap::SetColour(const Colour& colour, int x, int y) {
 	image[y][x].red = colour.red;
 	image[y][x].green = colour.green;
 	image[y][x].blue = colour.blue;
 }
 
-// √енерирует .bmp файл
 void Bitmap::GenerateBitmapImage() const {
 	unsigned char bmpPad[3] = { 0, 0, 0 };
 
@@ -78,11 +119,11 @@ void Bitmap::GenerateBitmapImage() const {
 
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
-			unsigned char r = static_cast<unsigned char>(GetColour(x, y).red * 255.0f);		// красный канал - число с плавающей точкой
-			unsigned char g = static_cast<unsigned char>(GetColour(x, y).green * 255.0f);	// поэтому умножаем на значение 255.0f,
-			unsigned char b = static_cast<unsigned char>(GetColour(x, y).blue * 255.0f);	// чтобы попасть в интервал (0; 255)
+			unsigned char r = static_cast<unsigned char>(GetColour(x, y).red * 255.0f);		// Red channel is a floating point number
+			unsigned char g = static_cast<unsigned char>(GetColour(x, y).green * 255.0f);	// that's the reason why we multiply it by 255.0f,
+			unsigned char b = static_cast<unsigned char>(GetColour(x, y).blue * 255.0f);	// so we can get into the interval (0; 255)
 
-			unsigned char pixelColour[] = { b, g, r }; // пиксели записываютс€ с синего канала THIS IS THE WAY
+			unsigned char pixelColour[] = { b, g, r }; // write pixels start with a blue channel
 
 			file.write(reinterpret_cast<char*>(pixelColour), 3);
 		}
