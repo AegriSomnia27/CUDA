@@ -26,6 +26,8 @@ public:
 	// methods on CPU
 	Colour					GetColour(int x, int y) const;
 	void					SetColour(const Colour& colour, int x, int y);
+	int						GetImageHeight() const;
+	int						GetImageWidth() const;
 	void					GenerateBitmapImage() const;
 	void					DisplayImageInfo() const;
 

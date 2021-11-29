@@ -102,6 +102,14 @@ void Bitmap::SetColour(const Colour& colour, int x, int y) {
 	image[y][x].blue = colour.blue;
 }
 
+int Bitmap::GetImageHeight() const{
+	return height;
+}
+
+int Bitmap::GetImageWidth() const{
+	return width;
+}
+
 void Bitmap::GenerateBitmapImage() const {
 	unsigned char bmpPad[3] = { 0, 0, 0 };
 
