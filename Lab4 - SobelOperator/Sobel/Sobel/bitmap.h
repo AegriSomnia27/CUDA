@@ -28,7 +28,7 @@ public:
 	void					SetColour(const Colour& colour, int x, int y);
 	int						GetImageHeight() const;
 	int						GetImageWidth() const;
-	void					GenerateBitmapImage() const;
+	void					GenerateBitmapImage(const char* fileName);
 	void					DisplayImageInfo() const;
 
 private:

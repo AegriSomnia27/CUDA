@@ -110,7 +110,9 @@ int Bitmap::GetImageWidth() const{
 	return width;
 }
 
-void Bitmap::GenerateBitmapImage() const {
+void Bitmap::GenerateBitmapImage(const char* fileName){
+	imageFileName = fileName;
+
 	unsigned char bmpPad[3] = { 0, 0, 0 };
 
 	std::ofstream file;

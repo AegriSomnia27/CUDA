@@ -6,13 +6,14 @@
 
 
 int main() {
-	Bitmap bmp("cat.bmp", "test.bmp");
-	bmp.DisplayImageInfo();
+	Bitmap bmpCat("cat.bmp", "test.bmp");
+	bmpCat.DisplayImageInfo();
 
-	ImageProcessing::MakeGreyScale(&bmp);
-	
+	ImageProcessing::MakeGreyScale(&bmpCat);
+	bmpCat.GenerateBitmapImage("cat_greyscale.bmp");
 
-	bmp.GenerateBitmapImage();
+	ImageProcessing::SobelOperator(&bmpCat);
+	bmpCat.GenerateBitmapImage("cat_sobel_operator.bmp");
 
 	return 0;
 }
