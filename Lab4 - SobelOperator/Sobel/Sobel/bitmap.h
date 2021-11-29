@@ -1,12 +1,6 @@
 #ifndef BITMAP_H
 #define BITMAP_H
 
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
-
-#include <fstream>
-#include <stdint.h>
-
 
 // Structure that contains colour of each pixels
 struct Colour {
@@ -32,11 +26,8 @@ public:
 	// methods on CPU
 	Colour					GetColour(int x, int y) const;
 	void					SetColour(const Colour& colour, int x, int y);
-	void					MakeGrayScaleImage();
 	void					GenerateBitmapImage() const;
-
-	// methods on GPU
-	//__global__ void			MakeGrayScaleImageCUDA();
+	void					DisplayImageInfo() const;
 
 private:
 	static const int		BYTES_PER_PIXEL;

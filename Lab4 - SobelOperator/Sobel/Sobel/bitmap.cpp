@@ -27,9 +27,10 @@ Bitmap::Bitmap(int Height, int Width, const char* ImageName) :
 	}
 }
 
-Bitmap::Bitmap(const char* inputFileName, const char* outputFileName){
+Bitmap::Bitmap(const char* inputFileName, const char* outputFileName): 
+	height(0), width(0), imageFileName(outputFileName) {
 	std::ifstream inputFile;
-	inputFile.open(inputFileName, std::ios::in || std::ios::binary);
+	inputFile.open(inputFileName, std::ios::binary);
 
 	if (!inputFile.is_open()) {
 		std::cerr << "File cannot be opened" << std::endl;
@@ -52,8 +53,6 @@ Bitmap::Bitmap(const char* inputFileName, const char* outputFileName){
 	width = infoHeader[4] + (infoHeader[5] << 8) + (infoHeader[6] << 16) + (infoHeader[7] << 24);
 	height = infoHeader[8] + (infoHeader[9] << 8) + (infoHeader[10] << 16) + (infoHeader[11] << 24);
 
-	imageFileName = outputFileName;
-
 	paddingAmount = ((4 - (width * 3) % 4) % 4);
 
 	image = new Colour * [height];
@@ -61,15 +60,21 @@ Bitmap::Bitmap(const char* inputFileName, const char* outputFileName){
 		image[i] = new Colour[width];
 	}
 
+	// Calculate offset to the pixels data
+	const int offset = fileHeader[10] + (fileHeader[11] << 8) + (fileHeader[12] << 16) + (fileHeader[13] << 24);
+	inputFile.seekg(offset, inputFile.beg);
 
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
-			unsigned char colour[3];
+			unsigned char* colour = new unsigned char[3];
+			//unsigned char colour[3];
 			inputFile.read(reinterpret_cast<char*>(colour), 3);
-
+	
 			image[y][x].red = static_cast<float>(colour[2]) / 255.0f;
 			image[y][x].green = static_cast<float>(colour[1]) / 255.0f;
 			image[y][x].blue = static_cast<float>(colour[0]) / 255.0f;
+
+			delete[] colour;
 		}
 		inputFile.ignore(paddingAmount);
 	}
@@ -134,6 +139,12 @@ void Bitmap::GenerateBitmapImage() const {
 	file.close();
 
 	std::cout << "File has been created!\n";
+}
+
+void Bitmap::DisplayImageInfo() const{
+	std::cout << "Height: " << height << std::endl;
+	std::cout << "Width: " << width << std::endl;
+	std::cout << "Padding: " << paddingAmount << std::endl;
 }
 
 unsigned char* Bitmap::CreateBitmapFileHeader()const {
