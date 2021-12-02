@@ -1,7 +1,6 @@
 #include "image_processing.h"
 
 #include <cmath>
-#include <math.h> // for CUDA computations
 
 void ImageProcessing::MakeGreyScale(Bitmap* bmpImage, float redChannelWeight, float greenChannelWeight, float blueChannelWeight){
 	for (int y = 0; y < bmpImage->GetImageHeight(); y++) {

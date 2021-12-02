@@ -18,6 +18,7 @@ const int Bitmap::INFO_HEADER_SIZE = 40;
 // Constructor that creates a 2D array of pixels with their colours
 Bitmap::Bitmap(int Height, int Width, const char* ImageName) :
 	height(Height), width(Width), imageFileName(ImageName) {
+	size = width * height * BYTES_PER_PIXEL;
 	paddingAmount = ((4 - (width * 3) % 4) % 4);
 
 	image = new Colour * [height];
@@ -49,9 +50,10 @@ Bitmap::Bitmap(const char* inputFileName, const char* outputFileName):
 	unsigned char infoHeader[INFO_HEADER_SIZE];
 	inputFile.read(reinterpret_cast<char*>(infoHeader), INFO_HEADER_SIZE);
 
-	const int fileSize = fileHeader[2] + (fileHeader[3] << 8) + (fileHeader[4] << 16) + (fileHeader[5] << 24);
+	//size = fileHeader[2] + (fileHeader[3] << 8) + (fileHeader[4] << 16) + (fileHeader[5] << 24);
 	width = infoHeader[4] + (infoHeader[5] << 8) + (infoHeader[6] << 16) + (infoHeader[7] << 24);
 	height = infoHeader[8] + (infoHeader[9] << 8) + (infoHeader[10] << 16) + (infoHeader[11] << 24);
+	size = width * height * BYTES_PER_PIXEL;
 
 	paddingAmount = ((4 - (width * 3) % 4) % 4);
 
@@ -110,6 +112,123 @@ int Bitmap::GetImageWidth() const{
 	return width;
 }
 
+int Bitmap::GetImageSize() const{
+	return size;
+}
+
+float* Bitmap::GenerateLinearizedPixelMap() const{
+	// If we want linearized array e.g. for GPU computation
+	// pixelMap[i] = red channel; pixelMap[i+1] = green channel; pixelMap[i+2] = blue channel.
+
+	float* pixelMap = new float[height * width * BYTES_PER_PIXEL];
+
+	/*for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++){
+			pixelMap[width * y + x] = this->GetColour(x, y).red;
+			pixelMap[width*height + width * y + x] = this->GetColour(x, y).green;
+			pixelMap[2*width*height +width * y + x] = this->GetColour(x, y).blue;
+		}
+	}*/
+
+	//x + WIDTH * (y + DEPTH * z)
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			for (int z = 0; z < BYTES_PER_PIXEL; z++) {
+				if (z == 0) {
+					pixelMap[y * width * BYTES_PER_PIXEL + x * BYTES_PER_PIXEL + z] = this->GetColour(x, y).red;
+				} else if (z == 1) {
+					pixelMap[y * width * BYTES_PER_PIXEL + x * BYTES_PER_PIXEL + z] = this->GetColour(x, y).green;
+				} else {
+					pixelMap[y * width * BYTES_PER_PIXEL + x * BYTES_PER_PIXEL + z] = this->GetColour(x, y).blue;
+				}
+			}
+		}
+	}
+
+	return pixelMap;
+}
+
+float** Bitmap::Generate2DPixelMap() const {
+	// If we want 2D array. MAYBE in some cases we might need that
+	// pixelMap[y][i] = red channel; pixelMap[y][i+1] = green channel; pixelMap[y][i+2] = blue channel.
+
+		float** pixelMap = new float* [height];
+
+		for (int y = 0; y < height; y++) {
+			pixelMap[y] = new float[width * BYTES_PER_PIXEL];
+
+			for (int x = 0, i = 0; x < width; i += 3, x++) {
+				pixelMap[y][i] = this->GetColour(x, y).red;
+				pixelMap[y][i + 1] = this->GetColour(x, y).green;
+				pixelMap[y][i + 2] = this->GetColour(x, y).blue;
+			}
+		}
+
+		return pixelMap;
+}
+
+void Bitmap::InitializeWithLinearizedPixelMap(float* pixelMap, const int pixelMapHeight, const int pixelMapWidth){
+	// Check if a current object has different height and width
+	if (height != pixelMapHeight || width != pixelMapWidth / 3) {
+		std::cout << "The current bmp object contains a different image\n";
+		std::cout << "deleting the previous image...\n";
+		// free allocated memory by **image
+		this->~Bitmap();
+
+		// reloade attributes
+		std::cout << "creating new image...\n";
+
+		new(this) Bitmap(pixelMapHeight, pixelMapWidth / BYTES_PER_PIXEL);
+	}
+	
+	for (int y = 0; y < pixelMapHeight; y++) {
+		for (int x = 0; x < width; x++) {
+			Colour currentColour;
+			for (int z = 0; z < BYTES_PER_PIXEL; z++) {
+				if (z == 0) {
+					currentColour.red = pixelMap[y*width*BYTES_PER_PIXEL + x*BYTES_PER_PIXEL + z];
+				}else if (z == 1) {
+					currentColour.green = pixelMap[y * width * BYTES_PER_PIXEL + x * BYTES_PER_PIXEL + z];
+				}else {
+					currentColour.blue = pixelMap[y * width * BYTES_PER_PIXEL + x * BYTES_PER_PIXEL + z];
+				}
+			}
+			this->SetColour(currentColour, x, y);
+		}
+	}
+
+}
+
+void Bitmap::InitializeWith2DPixelMap(float** pixelMap, const int pixelMapHeight, const int pixelMapWidth){
+	// Check if a current object has different height and width
+	if (height != pixelMapHeight || width != pixelMapWidth/3) {
+		std::cout << "The current bmp object contains a different image\n";
+		std::cout << "deleting the previous image...\n";
+		// free allocated memory by **image
+		this->~Bitmap();
+		
+		// reloade attributes
+		std::cout << "creating new image...\n";
+
+		new(this) Bitmap(pixelMapHeight, pixelMapWidth / 3);
+	}
+	
+
+	for (int y = 0; y < pixelMapHeight; y++) {
+		for (int x = 0, i = 0; x < width; i+=3, x++) {
+			this->SetColour(
+				Colour(pixelMap[y][i], pixelMap[y][i + 1], pixelMap[y][i + 2]),
+				x,
+				y
+			);
+		}
+	}
+
+	// Free memory allocated by pixelMap
+	// TODO: needs a better implementation, but for now this will do
+	// this->FreePixelMapMemory(pixelMap, pixelMapHeight, pixelMapWidth);
+}
+
 void Bitmap::GenerateBitmapImage(const char* fileName){
 	imageFileName = fileName;
 
@@ -154,6 +273,7 @@ void Bitmap::GenerateBitmapImage(const char* fileName){
 void Bitmap::DisplayImageInfo() const{
 	std::cout << "Height: " << height << std::endl;
 	std::cout << "Width: " << width << std::endl;
+	std::cout << "Size: " << size << std::endl;
 	std::cout << "Padding: " << paddingAmount << std::endl;
 }
 
@@ -242,4 +362,15 @@ unsigned char* Bitmap::CreateBitmapInfoHeader() const {
 	informationHeader[39] = static_cast<unsigned char>(0);
 
 	return informationHeader;
+}
+
+void Bitmap::ClearImageData(){
+
+}
+
+void Bitmap::FreePixelMapMemory(float** pixelMap, int pixelMapHeight, int pixelMapWidth){
+	for (int y = 0; y < pixelMapHeight; y++) {
+		delete[] pixelMap[y];
+	}
+	delete[] pixelMap;
 }

@@ -20,14 +20,18 @@ class Bitmap {
 public:
 	Bitmap() = delete;
 	Bitmap(int Height, int Width, const char* ImageName = "test.bmp");
-	Bitmap(const char* inputFileName, const char* outputFileName);
+	Bitmap(const char* inputFileName, const char* outputFileName = "test.bmp");
 	~Bitmap();
 
-	// methods on CPU
 	Colour					GetColour(int x, int y) const;
 	void					SetColour(const Colour& colour, int x, int y);
 	int						GetImageHeight() const;
 	int						GetImageWidth() const;
+	int						GetImageSize() const;
+	float*					GenerateLinearizedPixelMap() const;
+	float**					Generate2DPixelMap() const;
+	void					InitializeWithLinearizedPixelMap(float* pixelMap, const int pixelMapHeight, const int pixelMapWidth);
+	void					InitializeWith2DPixelMap(float** pixelMap, const int pixelMapHeight, const int pixelMapWidth);
 	void					GenerateBitmapImage(const char* fileName);
 	void					DisplayImageInfo() const;
 
@@ -38,6 +42,7 @@ private:
 
 	int						height;
 	int						width;
+	int						size;
 	int						paddingAmount;
 
 	Colour**				image;
@@ -45,6 +50,8 @@ private:
 
 	unsigned char*			CreateBitmapFileHeader() const;
 	unsigned char*			CreateBitmapInfoHeader() const;
+	void					ClearImageData();
+	void					FreePixelMapMemory(float** pixelMap, int pixelMapHeight, int pixelMapWidth);
 };
 
 
