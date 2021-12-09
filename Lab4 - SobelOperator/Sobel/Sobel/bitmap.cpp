@@ -138,15 +138,6 @@ float* Bitmap::GenerateLinearizedPixelMap() const{
 
 	float* pixelMap = new float[height * width * BYTES_PER_PIXEL];
 
-	/*for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++){
-			pixelMap[width * y + x] = this->GetColour(x, y).red;
-			pixelMap[width*height + width * y + x] = this->GetColour(x, y).green;
-			pixelMap[2*width*height +width * y + x] = this->GetColour(x, y).blue;
-		}
-	}*/
-
-	//x + WIDTH * (y + DEPTH * z)
 	for (int y = 0; y < height; y++) {
 		for (int x = 0; x < width; x++) {
 			for (int z = 0; z < BYTES_PER_PIXEL; z++) {

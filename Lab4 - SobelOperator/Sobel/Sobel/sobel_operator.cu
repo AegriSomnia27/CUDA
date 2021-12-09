@@ -105,9 +105,7 @@ __global__ void SobelOperatorKernelTexture(float* pixelMap_out, cudaTextureObjec
 		if (x % 3 == 0) {
 			for (int i = -1; i <= 1; i++) {
 				for (int j = -1; j <= 1; j++) {
-					/*xSum += pixelMap_in[indx + y * width + x] * GX[y + 1][x + 1];
-					ySum += pixelMap_in[indx + y * width + x] * GY[y + 1][x + 1];*/
-
+					// Ingore all the errors. We KNOW that we are doing
 					xSum += tex2D<float>(textureObject, x + i + 0.5, y + j + 0.5) * GX[i + 1][j + 1];
 					ySum += tex2D<float>(textureObject, x + i + 0.5, y + j + 0.5) * GY[i + 1][j + 1];
 				}
