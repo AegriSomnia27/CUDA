@@ -80,7 +80,7 @@ __global__ void SobelOperatorKernel(float* pixelMap_in, float* pixelMap_out, con
 	}
 }
 
-__global__ void SobelOperatorKernelTexture(float* pixelMap_out, cudaTextureObject_t textureObject, const int height, const int width){
+__global__ void SobelOperatorKernelTexture(float* pixelMap_out, cudaTextureObject_t textureObject, const int width, const int height){
 	unsigned int x = blockIdx.x * blockDim.x + threadIdx.x;
 	unsigned int y = blockIdx.y * blockDim.y + threadIdx.y;
 
@@ -100,15 +100,16 @@ __global__ void SobelOperatorKernelTexture(float* pixelMap_out, cudaTextureObjec
 
 	float xSum = 0;
 	float ySum = 0;
-	
-		if ((x % 3 == 0) && (x < width) && (y<height)) {
+
+	if ((x < width) && (y < height)) {
+		if (x % 3 == 0) {
 			for (int i = -1; i <= 1; i++) {
 				for (int j = -1; j <= 1; j++) {
 					/*xSum += pixelMap_in[indx + y * width + x] * GX[y + 1][x + 1];
 					ySum += pixelMap_in[indx + y * width + x] * GY[y + 1][x + 1];*/
 
-					xSum += tex2D<float>(textureObject, x + i, y + j) * GX[i + 1][j + 1];
-					ySum += tex2D<float>(textureObject, x + i, y +  j) * GY[i + 1][j + 1];
+					xSum += tex2D<float>(textureObject, x + i + 0.5, y + j + 0.5) * GX[i + 1][j + 1];
+					ySum += tex2D<float>(textureObject, x + i + 0.5, y + j + 0.5) * GY[i + 1][j + 1];
 				}
 			}
 
@@ -119,7 +120,7 @@ __global__ void SobelOperatorKernelTexture(float* pixelMap_out, cudaTextureObjec
 			pixelMap_out[y * width + x + 1] = sobelValue;
 			pixelMap_out[y * width + x + 2] = sobelValue;
 		}
-	
+	}
 }
 
 
