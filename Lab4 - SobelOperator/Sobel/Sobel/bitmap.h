@@ -21,6 +21,7 @@ public:
 	Bitmap() = delete;
 	Bitmap(int Height, int Width, const char* ImageName = "test.bmp");
 	Bitmap(const char* inputFileName, const char* outputFileName = "test.bmp");
+	Bitmap(const Bitmap* bmpImage);
 	~Bitmap();
 
 	Colour					GetColour(int x, int y) const;

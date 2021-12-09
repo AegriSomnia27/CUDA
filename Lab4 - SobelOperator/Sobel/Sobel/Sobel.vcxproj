@@ -77,19 +77,19 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CudaCompile Include="image_processing_cuda.cu" />
+    <CudaCompile Include="sobel_operator.cu" />
     <CudaCompile Include="main.cu" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="bitmap.cpp" />
-    <ClCompile Include="image_processing.cpp" />
+    <CudaCompile Include="image_processing.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="bitmap.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="image_processing.h" />
-    <ClInclude Include="image_processing_cuda.cuh" />
+    <ClInclude Include="sobel_operator.cuh" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

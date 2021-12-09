@@ -86,6 +86,22 @@ Bitmap::Bitmap(const char* inputFileName, const char* outputFileName):
 	std::cout << "File has been succesfully read!" << std::endl;
 }
 
+Bitmap::Bitmap(const Bitmap* bmpImage){
+	height = bmpImage->height;
+	width = bmpImage->width;
+	size = bmpImage->size;
+	imageFileName = bmpImage->imageFileName;
+
+	image = new Colour * [height];
+	for (int i = 0; i < height; i++) {
+		image[i] = new Colour[width];
+
+		for (int j = 0; j < width; j++) {
+			image[i][j] = bmpImage->image[i][j];
+		}
+	}
+}
+
 // Destructor that deletes an object and free the allocated memory
 Bitmap::~Bitmap() {
 	for (int i = 0; i < height; i++) {
