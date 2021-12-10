@@ -28,6 +28,33 @@ void ImageProcessing::MakeGreyScaleCPU(Bitmap* bmpImage, float redChannelWeight,
 	}
 }
 
+void ImageProcessing::NormalizeImageCPU(Bitmap* bmpImage){
+	float maxValue = bmpImage->GetColour(0, 0).red; float minValue = maxValue;
+
+	for (int y = 0; y < bmpImage->GetImageHeight(); y++) {
+		for (int x = 0; x < bmpImage->GetImageWidth(); x++) {
+			// Check every pixel for max and min value. Assume that we greyscaled an image
+			float redChannel = bmpImage->GetColour(x, y).red;
+			if (redChannel > maxValue) {
+				maxValue = redChannel;
+			}
+			if (redChannel < minValue) {
+				minValue = redChannel;
+			}
+		}
+	}
+
+	float newMax = 0.4f; float newMin = 0.0f;
+
+	for (int y = 0; y < bmpImage->GetImageHeight(); y++) {
+		for (int x = 0; x < bmpImage->GetImageWidth(); x++) {
+			float redChannel = bmpImage->GetColour(x, y).red;
+			float normalizedChannel = (redChannel - minValue) * (newMax - newMin) / (maxValue - minValue) + newMin;
+			bmpImage->SetColour(Colour(normalizedChannel, normalizedChannel, normalizedChannel), x, y);
+		}
+	}
+}
+
 void ImageProcessing::SobelOperatorCPU(Bitmap* bmpImage){
 	// Initializing Sobel Horizontal Mask
 	const float GX[3][3] = {

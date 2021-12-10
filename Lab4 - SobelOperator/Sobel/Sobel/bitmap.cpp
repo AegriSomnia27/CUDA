@@ -91,6 +91,7 @@ Bitmap::Bitmap(const Bitmap* bmpImage){
 	width = bmpImage->width;
 	size = bmpImage->size;
 	imageFileName = bmpImage->imageFileName;
+	paddingAmount = bmpImage->paddingAmount;
 
 	image = new Colour * [height];
 	for (int i = 0; i < height; i++) {

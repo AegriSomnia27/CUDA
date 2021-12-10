@@ -17,10 +17,12 @@ public:
 
 	static void					MakeGreyScaleCPU(Bitmap* bmpImage, float redChannelWeight = 0.299f,
 												 float greenChannelWeight = 0.587f, float blueChannelWeight = 0.114f);
+	static void					NormalizeImageCPU(Bitmap* bmpImage);
 	static void					SobelOperatorCPU(Bitmap* bmpImage);
 
 	static void					MakeGreyScaleGPU(Bitmap* bmpImage, MemoryTypeGPU memType, float redChannelWeight = 0.299f,
 												 float greenChannelWeight = 0.587f, float blueChannelWeight = 0.114f);
+	static void					NormalizeImageGPU(Bitmap* bmpImage);
 	static void					SobelOperatorGPU(Bitmap* bmpImage, MemoryTypeGPU memType);
 };
 
